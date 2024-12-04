@@ -1,1 +1,79 @@
+The FinityStaking smart contract allows users to stake a specified ERC-20 token and earn interest based on the selected staking plan.
+The contract supports four staking plans with varying APYs and durations.
+It incorporates key functionalities for staking, interest calculation, and administrative controls.
 
+Key Features:
+
+Flexible Staking Plans: Four predefined plans with adjustable APYs and durations.
+Interest Calculation: Calculates interest using the specified APY and staking duration.
+Admin Controls: Allows administrators to manage APYs, durations, and contract balances.
+Security: Protects against reentrancy attacks using OpenZeppelin's ReentrancyGuard.
+User Transparency: Emits events for every significant action (staking, unstaking, deposits, withdrawals).
+
+Functions
+1. User Functions
+
+stake(uint256 amount, uint256 plan):
+Description: Allows a user to stake tokens under a selected plan.
+Parameters:
+amount: The number of tokens to stake.
+plan: The staking plan (1-4).
+Requirements:
+amount must be greater than 0.
+Contract balance must have sufficient tokens to cover the staked amount and interest.
+Emits: Staked(address user, uint256 amount, uint256 duration, uint256 apy).
+
+unstake(uint256 stakeIndex):
+Description: Allows a user to withdraw their staked tokens and earned interest after the staking period ends.
+Parameters:
+stakeIndex: The index of the stake in the user's stake array.
+Requirements:
+Stake must not have already been withdrawn.
+Staking period must be completed.
+Emits: Unstaked(address user, uint256 amount, uint256 interest).
+getUserStakes(address user)
+Description: Fetches all active stakes for a specific user.
+Returns: An array of Stake structures containing:
+amount: Staked tokens.
+startTime: Timestamp when the stake began.
+duration: Staking duration in seconds.
+apy: Annual percentage yield in basis points.
+withdrawn: Whether the stake has been withdrawn.
+
+getContractBal(address _tokenAddress):
+Description: Returns the balance of the contract for the specified token.
+Returns: Token balance of the contract.
+
+
+2. Administrative Functions
+
+withdrawExcessTokens(uint256 amount):
+Description: Withdraws tokens from the contract that are not tied to active stakes or interest.
+Requirements:
+amount must not exceed the available balance after accounting for staked tokens and interest.
+Emits: AdminWithdraw(address admin, uint256 amount).
+
+adminDeposit(uint256 amount):
+Description: Deposits tokens into the contract for future staking rewards.
+Requirements:
+amount must be greater than 0.
+Emits: AdminDeposit(address admin, uint256 amount).
+
+updateAPY(uint256 plan1APY, uint256 plan2APY, uint256 plan3APY, uint256 plan4APY)
+Description: Updates the APY rates for all staking plans.
+Requirements:
+Each APY must be positive and ≤ 10000 (100%).
+Emits: APYUpdated(uint256 plan1APY, uint256 plan2APY, uint256 plan3APY, uint256 plan4APY).
+
+updatePlanDuration(uint256 plan1Days, uint256 plan2Days, uint256 plan3Days, uint256 plan4Days)
+Description: Updates the staking durations for all plans.
+Requirements:
+Each duration must be positive.
+Emits: PlanDaysUpdated(uint256 plan1Days, uint256 plan2Days, uint256 plan3Days, uint256 plan4Days).
+
+Staking Plans
+Plan	APY (Annual)	Duration
+Plan 1	8.97%	90 days
+Plan 2	14.35%	365 days
+Plan 3	21.52%	730 days
+Plan 4	28.69%	1460 days
