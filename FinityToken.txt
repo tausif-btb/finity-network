@@ -1,1 +1,37 @@
 
+The Finity smart contract is an ERC20-compliant token with added functionality for burning tokens and supporting off-chain approvals via EIP-2612 permits. It is designed to serve as the native token for the Finity Network, with a total supply of 10 billion tokens minted to a specified multi-signature wallet at deployment.
+
+Features:
+
+ERC20 Standard: Implements the standard functionality of ERC20 tokens, including transferring and querying balances.
+ERC20 Burnable: Allows token holders to burn their tokens, reducing the total supply.
+ERC20 Permit: Enables gasless approvals using EIP-2612, allowing token allowances to be set via cryptographic signatures instead of transactions.
+Ownable2Step: Provides a robust ownership management mechanism where ownership can be securely transferred in a two-step process, ensuring secure multi-sig wallet integration.
+Key Components
+
+Constructor
+The constructor initializes the contract with the following parameters:
+_multiSigWallet: The address of the multi-signature wallet that will initially own all minted tokens and the contract itself. This address must be non-zero.
+
+Functionality:
+
+Mints a fixed total supply of 10 billion tokens to the _multiSigWallet address.
+Sets _multiSigWallet as the initial owner of the contract.
+Functions
+
+Standard ERC20 Functions:
+
+transfer: Transfer tokens to another address.
+approve: Approve a spender to use a specified number of tokens.
+transferFrom: Transfer tokens on behalf of an account.
+balanceOf: Get the token balance of an account.
+Burning Tokens:burn(amount): Burns the caller's tokens, reducing the total supply.
+burnFrom(account, amount): Burns tokens from a specified account, provided the caller has sufficient allowance.
+
+Permit Approvals:
+permit: Allows token allowances to be set by submitting a signed message, enabling gasless transactions.
+Ownership Management:
+
+The contract uses Ownable2Step for managing ownership transitions, providing secure transfer of ownership to a new owner in two steps:
+transferOwnership: Initiates ownership transfer.
+acceptOwnership: Completes the transfer.
