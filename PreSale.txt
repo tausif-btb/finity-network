@@ -1,1 +1,110 @@
 
+The FinnityPreSale contract facilitates a token presale for the Finity Network. Participants can buy Finity tokens using ETH or USDT during the presale period. The contract integrates key security features, price feed oracles, and configurable parameters to ensure smooth and secure transactions.
+
+Features:
+
+Token Purchase Options:
+
+Buy Finity tokens using ETH or USDT.
+Conversion rates based on the token price and the current ETH/USDT price from Chainlink price feeds.
+
+Dynamic Pricing:
+Uses Chainlink's ETH/USDT price feed to calculate the current ETH price in USDT.
+Supports token price configuration in 18 decimal format.
+
+Thresholds and Limits:
+Minimum buy thresholds (in USDT) to ensure meaningful transactions.
+Prevents under-threshold or negligible purchases.
+Security Mechanisms:
+
+Implements ReentrancyGuard to protect against reentrancy attacks.
+Supports Pausable operations for emergency management.
+Ownership secured using Ownable2Step, allowing safe ownership transfer to a multi-signature wallet.
+
+Treasury Management:
+Funds collected during the presale are transferred to a configurable multiSignTreasuryWallet.
+Ability to withdraw remaining tokens or ETH after the presale.
+
+Flexibility:
+Configurable token price, thresholds, and Chainlink price feed address.
+Allows safe withdrawal of tokens and ETH by the contract owner.
+
+Key Components:
+Constructor
+Initializes the contract with the following parameters:
+
+_tokenPrice: The price of Finity tokens in USDT (with 18 decimals).
+multiSigWallet: The treasury wallet address to receive collected funds.
+_minThresholdLimit: The minimum purchase value in USDT (6 decimals).
+_finityToken: The Finity token contract address.
+_usdttoken: The USDT token contract address.
+
+Additionally:
+Initializes Chainlink's ETH/USDT price feed for dynamic ETH-to-USDT conversions.
+
+Functions:
+Buying Tokens
+
+buyTokens(): Buy Finity tokens using ETH.
+buyTokenWithUsdt(uint256 usdtAmount): Buy Finity tokens using USDT.
+
+Utility:
+
+getETHPriceInUSDT(): Fetch the current ETH price in USDT using Chainlink.
+getContractBal(address _tokenAddress): Get the token balance held by the contract.
+
+Administrative
+updateTreasuryWallet(address _multiSigWallet): Update the treasury wallet.
+setTokenPrice(uint256 _newTokenPrice): Change the Finity token price (18 decimals).
+setMinThreshold(uint256 _minThresholdLimit): Adjust the minimum purchase threshold.
+updateAggregatorPairAddress(address _newPairAddress): Update the Chainlink price feed address.
+withdrawTokens(address tokenAddress, uint256 amount): Withdraw leftover tokens from the contract.
+withdrawProfit(): Withdraw collected ETH to the treasury wallet.
+
+Pausable
+Supports pausing and unpausing presale activities for emergency scenarios.
+
+Fallback Functionality
+receive(): Enables the contract to accept ETH directly.
+
+Events
+TokensPurchased: Emitted when tokens are purchased.
+TreasuryWalletUpdated: Emitted when the treasury wallet is updated.
+TokenPriceUpdated: Emitted when the token price is updated.
+minThresholdUpdated: Emitted when the minimum threshold is updated.
+AggregatorPairUpdated: Emitted when the Chainlink price feed address is updated.
+TokensWithdrawn: Emitted when leftover tokens are withdrawn.
+ETHWithdrawn: Emitted when ETH is withdrawn to the treasury wallet.
+
+Security Considerations:
+Reentrancy Protection: The use of nonReentrant prevents reentrancy attacks.
+Price Feed Freshness: Validates that the Chainlink price feed data is fresh, preventing stale or inaccurate price usage.
+Pausable Mechanism: Enables halting operations in case of suspicious or emergency conditions.
+Multi-Signature Wallet: Ensures the treasury wallet is a multi-signature address for added security.
+Proper Validations: All inputs and balances are validated to prevent errors or misuse.
+
+Example Workflow
+
+Buy Tokens with ETH:
+
+User sends ETH to the contract via buyTokens.
+The ETH amount is converted to USDT using the Chainlink price feed.
+The equivalent amount of Finity tokens is calculated and transferred to the buyer.
+
+Buy Tokens with USDT:
+
+User calls buyTokenWithUsdt and specifies the USDT amount.
+The contract transfers USDT to the treasury wallet.
+Finity tokens are sent to the buyer.
+
+Post-Presale Operations:
+Owner withdraws remaining Finity tokens and ETH to the treasury wallet.
+Presale activities are paused or concluded.
+
+Configuration Details:
+Chainlink Price Feed: Default is ETH/USDT on the mainnet. Can be updated for other chains or pairs.
+
+Decimals Handling:
+ETH/USDT price feed: Scaled by 1e8.
+USDT has 6 decimals; Finity tokens have 18 decimals.
+Proper scaling ensures accurate calculations.
