@@ -1,5 +1,6 @@
 
-The Finity smart contract is an ERC20-compliant token with added functionality for burning tokens and supporting off-chain approvals via EIP-2612 permits. It is designed to serve as the native token for the Finity Network, with a total supply of 10 billion tokens minted to a specified multi-signature wallet at deployment.
+The Finity smart contract is an ERC20-compliant token with added functionality for burning tokens and supporting off-chain approvals via EIP-2612 permits.
+It is designed to serve as the native token for the Finity Network, with a total supply of 10 billion tokens minted to a specified multi-signature wallet at deployment.
 
 Features:
 
