@@ -41,14 +41,14 @@ contract FinnityPreSale is Ownable2Step, Pausable, ReentrancyGuard {
         tokenPrice = _tokenPrice;
         multiSignTreasuryWallet = multiSigWallet;
         minThresholdLimit = _minThresholdLimit;
-        priceFeed = AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306); // ETH/USDT Pair Price Feed Address on mainnet
+        priceFeed = AggregatorV3Interface(0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46); // USDT/ETH Pair Price Feed Address on mainnet
     }
     
-    function getETHPriceInUSDT() public view returns (uint256) {
+      function getETHPriceInUSDT() public view returns (uint256) {
         (, int256 price, , uint256 updatedAt, ) = priceFeed.latestRoundData();
-        require(price > 0, "Invalid price");
+        uint256 priceETHInUSDT= 1e24 * uint256(price);
         require(block.timestamp - updatedAt <= priceStaleThreshold,"Price data is stale");
-        return uint256(price);
+        return uint256(priceETHInUSDT);
     }
 
     function updateTreasuryWallet(address _multiSigWallet) external onlyOwner {
@@ -62,7 +62,7 @@ contract FinnityPreSale is Ownable2Step, Pausable, ReentrancyGuard {
         require(msg.value > 0, "Must send some ETH");
 
         uint256 price = getETHPriceInUSDT();
-        uint256 ethAmountInUSDT = price * msg.value / 1e26;
+        uint256 ethAmountInUSDT = price * msg.value / 1e24;
         require(ethAmountInUSDT >= (minThresholdLimit/1e6), "Less Than Threshold");
         uint256 finityTokQty = ethAmountInUSDT * tokenPrice;
 
