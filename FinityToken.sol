@@ -13,7 +13,7 @@ contract Finity is ERC20, ERC20Burnable, ERC20Permit, Ownable2Step {
         Ownable(_multiSigWallet)
     {
         require(_multiSigWallet != address(0), "Invalid address");
-        uint256 totalSupply = 1e10 * 10**decimals(); //10 Billion Supply
+        uint256 totalSupply = 8 * 1e9 * 10**decimals(); //8 Billion Supply
         _mint(_multiSigWallet, totalSupply);
     }
 }
