@@ -8,8 +8,8 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
  
 contract FinityFlexibleStaking is Ownable2Step, ReentrancyGuard {
     using SafeERC20 for IERC20;
-    IERC20 public finityToken;
-    uint256 public apy;
+    IERC20 public finityToken; //Finity Token Contract Address
+    uint256 public apy; // Annual APY
     uint256 public totalStaked;
     address public multiSignTreasuryWallet;
  
