@@ -76,7 +76,7 @@ contract FinnityPreSale is Ownable2Step, Pausable, ReentrancyGuard {
         emit TokensPurchased(msg.sender, finityTokQty);
     }
 
-    function withdrawProfit() public {
+    function withdrawProfit() external {
         uint256 totalBalance = address(this).balance;
         (bool sent,)= multiSignTreasuryWallet.call{value:totalBalance }("");
         if(sent == false) revert("ETH Transfer Failed");
