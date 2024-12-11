@@ -36,8 +36,8 @@ contract FinnityPreSale is Ownable2Step, Pausable, ReentrancyGuard {
     constructor(uint256 _tokenPrice,address multiSigWallet,uint256 _minThresholdLimit,address _finityToken ,address _usdttoken)
         Ownable(multiSigWallet)
     {
-        finityToken = IERC20(_finityToken); //FinityToken Address on sepolia
-        usdtToken = IERC20(_usdttoken); // USDT Address  on sepolia
+        finityToken = IERC20(_finityToken); //FinityToken Contract Address
+        usdtToken = IERC20(_usdttoken); // USDT Contract Address
         tokenPrice = _tokenPrice;
         multiSignTreasuryWallet = multiSigWallet;
         minThresholdLimit = _minThresholdLimit;
