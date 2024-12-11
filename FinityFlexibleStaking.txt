@@ -1,1 +1,76 @@
+Overview
 
+The Finity Flexible Staking Contract enables users to stake the Finity token (an ERC20 token) and earn rewards based on an Annual Percentage Yield (APY).
+This contract is designed to provide flexibility for stakers, allowing them to unstake their tokens along with the accrued rewards at any time. The owner of the contract can manage various configurations such as updating the APY, withdrawing tokens, or updating the token address.
+
+Key Features:
+
+Stake and Earn Rewards: Users can stake Finity tokens and earn rewards based on the specified APY.
+Flexible Unstaking: Users can unstake their tokens at any time and receive the principal along with the calculated rewards.
+APY Management: The owner can update the APY.
+Multi-Signature Wallet Integration: A multi-signature wallet is used as the treasury wallet for added security.
+Token Withdrawal by Owner: The contract owner can withdraw tokens or ETH from the contract.
+Security Features: Includes measures like non-reentrancy and safe token operations to ensure robust security.
+
+Contract Variables and Their Purpose
+
+State Variables
+
+finityToken: The address of the Finity token contract.
+apy: The annual percentage yield (APY) used to calculate staking rewards.
+totalStaked: Tracks the total amount of tokens staked in the contract.
+multiSignTreasuryWallet: The address of the multi-signature wallet used for treasury management.
+
+Structs
+
+StakeInfo:
+amount: The amount of tokens staked by a user.
+startTime: The timestamp when the user started staking.
+
+Mappings
+stakes: Maps user addresses to their respective StakeInfo.
+
+Events
+Staked(address indexed user, uint256 amount, uint256 time): Triggered when a user stakes tokens.
+Unstaked(address indexed user, uint256 principal, uint256 reward, uint256 time): Triggered when a user unstakes their tokens and receives rewards.
+finityTokenAddressUpdated(address indexed newAddress): Triggered when the Finity token address is updated.
+APYUpdated(uint256 newAPY): Triggered when the APY is updated.
+
+Contract Functions:
+constructor(address _multiSigWallet, uint256 _initialAPY, address _finityToken) Ownable(_multiSigWallet)
+
+Initializes the contract with:
+_multiSigWallet: Address of the multi-signature treasury wallet.
+_initialAPY: Initial APY for staking.
+_finityToken: Address of the Finity token contract.
+
+Public Functions:
+
+1.stake(uint256 _amount)
+Allows users to stake Finity tokens.
+Transfers the _amount of Finity tokens from the user's wallet to the contract.
+Calculates and adds any existing rewards to the new stake.
+Updates the user's staking information and the total staked amount.
+
+2.unstake()
+
+Allows users to unstake their tokens and receive their rewards.
+Calculates rewards based on the staking duration.
+Transfers the total amount (principal + rewards) back to the user.
+Resets the user's stake data and updates the total staked amount.
+
+3.calculateReward(address _user) -> uint256
+
+Returns the total reward earned by the user based on:
+The staked amount.
+The APY.
+The duration of staking (in days).
+
+4.getUserStake(address user) -> (uint256 amount, uint256 startTime)
+
+Returns the staking information for the specified user:
+amount: The amount of tokens staked.
+startTime: The timestamp when staking began.
+
+5.getContractBal(address _tokenAddress) -> uint256
+Returns the balance of the specified token held by the contract.
