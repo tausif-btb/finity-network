@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+pragma solidity 0.8.24;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -19,7 +19,7 @@ contract FinnityPreSale is Ownable2Step, Pausable, ReentrancyGuard {
     uint256 public tokenPrice; // Token Price is per USDT eg. 1USDT=2Finity and must be with proper 18 decimals format
 
     AggregatorV3Interface public priceFeed; // Chainlink price feed;
-    uint256 public priceStaleThreshold = 1 hours;
+    uint256 immutable priceStaleThreshold = 1 hours;
     uint256 public minThresholdLimit; // Minimum buy value in USDT
 
     event TokensPurchased(address indexed buyer, uint256 amount);
@@ -30,25 +30,34 @@ contract FinnityPreSale is Ownable2Step, Pausable, ReentrancyGuard {
     event TokensWithdrawn(address indexed admin, uint256 amount);
     event ETHWithdrawn(address indexed admin, uint256 amount);
     event TreasuryWalletUpdated(address indexed newWallet);
-    
+
     // _tokenPrice should be in 18 decimals format.
     // _minBuyValueInUSDT value should be in usdt with 6 decimals
-    constructor(uint256 _tokenPrice,address multiSigWallet,uint256 _minThresholdLimit,address _finityToken ,address _usdttoken)
-        Ownable(multiSigWallet)
-    {
+    constructor(
+        uint256 _tokenPrice,
+        address multiSigWallet,
+        uint256 _minThresholdLimit,
+        address _finityToken,
+        address _usdttoken
+    ) Ownable(multiSigWallet) {
         finityToken = IERC20(_finityToken); //FinityToken Contract Address
         usdtToken = IERC20(_usdttoken); // USDT Contract Address
         tokenPrice = _tokenPrice;
         multiSignTreasuryWallet = multiSigWallet;
         minThresholdLimit = _minThresholdLimit;
-        priceFeed = AggregatorV3Interface(0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46); // USDT/ETH Pair Price Feed Address on mainnet
+        priceFeed = AggregatorV3Interface(
+            0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46
+        ); // USDT/ETH Pair Price Feed Address on mainnet
     }
-    
-      function getETHPriceInUSDT() public view returns (uint256) {
+
+    function getETHPriceInUSDT() public view returns (uint256) {
         (, int256 price, , uint256 updatedAt, ) = priceFeed.latestRoundData();
-        uint256 priceETHInUSDT= 1e24 * uint256(price);
-        require(block.timestamp - updatedAt <= priceStaleThreshold,"Price data is stale");
-        return uint256(priceETHInUSDT);
+        require(price > 0, "Invalid price data"); // Ensure valid price
+        require(
+            block.timestamp - updatedAt <= priceStaleThreshold,
+            "Price data is stale"
+        );
+        return uint256(price); // Price of 1 USDT in ETH
     }
 
     function updateTreasuryWallet(address _multiSigWallet) external onlyOwner {
@@ -60,38 +69,45 @@ contract FinnityPreSale is Ownable2Step, Pausable, ReentrancyGuard {
 
     function buyTokens() external payable whenNotPaused nonReentrant {
         require(msg.value > 0, "Must send some ETH");
-
         uint256 price = getETHPriceInUSDT();
-        uint256 ethAmountInUSDT = price * msg.value / 1e24;
-        require(ethAmountInUSDT >= (minThresholdLimit/1e6), "Less Than Threshold");
+        uint256 ethAmountInUSDT = (msg.value / price);
+        require(
+            ethAmountInUSDT >= (minThresholdLimit / 1e6),
+            "Less Than Threshold"
+        );
         uint256 finityTokQty = ethAmountInUSDT * tokenPrice;
+        require(
+            finityToken.balanceOf(address(this)) >= finityTokQty,
+            "Insufficient Finity bal"
+        );
 
-        require(finityToken.balanceOf(address(this)) >= finityTokQty,"Insufficient Finity bal");
         finityToken.safeTransfer(msg.sender, finityTokQty);
 
-        (bool success, ) = payable(multiSignTreasuryWallet).call{value: msg.value}("");
+        (bool success, ) = payable(multiSignTreasuryWallet).call{
+            value: msg.value
+        }("");
         require(success, "Failed to transfer ETH");
 
         tokensBought[msg.sender] = tokensBought[msg.sender] + finityTokQty;
         emit TokensPurchased(msg.sender, finityTokQty);
     }
 
-    function withdrawProfit() external onlyOwner{
+    function withdrawProfit() external onlyOwner {
         uint256 totalBalance = address(this).balance;
-        (bool sent,)= multiSignTreasuryWallet.call{value:totalBalance }("");
-        if(sent == false) revert("ETH Transfer Failed");
+        (bool sent, ) = multiSignTreasuryWallet.call{value: totalBalance}("");
+        if (sent == false) revert("ETH Transfer Failed");
     }
 
     function buyTokenWithUsdt(uint256 usdtAmount)
         external
-        whenNotPaused  
-        nonReentrant                                
+        whenNotPaused
+        nonReentrant
     {
         require(usdtAmount > 0, "Must send some USDT");
         require(usdtAmount >= minThresholdLimit, "Less Than Threshold");
-    
+
         // Calculate the number of FinityTokens to be bought
-        uint256 finityTokAmount = usdtAmount * tokenPrice / 1e6; // Adjust for 18 decimals
+        uint256 finityTokAmount = (usdtAmount * tokenPrice) / 1e6; // Adjust for 18 decimals
         require(finityTokAmount > 0, "Finity too Small");
 
         // Check if there are enough tokens in the contract
@@ -121,10 +137,7 @@ contract FinnityPreSale is Ownable2Step, Pausable, ReentrancyGuard {
     {
         require(amount > 0, "Amount must be greater than 0");
         IERC20 token = IERC20(tokenAddress);
-        require(
-            token.balanceOf(address(this)) > 0,
-            "Insufficient token"
-        );
+        require(token.balanceOf(address(this)) > 0, "Insufficient token");
         if (token.balanceOf(address(this)) < amount) {
             amount = token.balanceOf(address(this));
         }
@@ -135,10 +148,12 @@ contract FinnityPreSale is Ownable2Step, Pausable, ReentrancyGuard {
     // Token Price must be in 18 decimals.
     function setTokenPrice(uint256 _newTokenPrice) external onlyOwner {
         require(_newTokenPrice > 0, "Price must be greater than 0");
+        uint256 oldTokenPrice = tokenPrice; // Cache the old token price
         tokenPrice = _newTokenPrice;
-        emit TokenPriceUpdated(tokenPrice, _newTokenPrice); // Emit event
+        emit TokenPriceUpdated(oldTokenPrice, _newTokenPrice); // Emit event
     }
-    
+
+
     // Update the minimum buy value in USDT
     function setMinThreshold(uint256 _minThresholdLimit) external onlyOwner {
         require(_minThresholdLimit > 0, "Threshold must be greater than 0");
@@ -160,7 +175,7 @@ contract FinnityPreSale is Ownable2Step, Pausable, ReentrancyGuard {
         view
         returns (uint256)
     {
-        require(_tokenAddress != address(0), "Invalid user address"); 
+        require(_tokenAddress != address(0), "Invalid token address");
         return IERC20(_tokenAddress).balanceOf(address(this));
     }
 
