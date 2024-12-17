@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+pragma solidity 0.8.24;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -43,7 +43,7 @@ contract FinityStaking is Ownable2Step, ReentrancyGuard {
     event PlanDaysUpdated(uint256 PLAN_1_DAYS, uint256 PLAN_2_DAYS, uint256 PLAN_3_DAYS, uint256 PLAN_4_DAYS);
 
     constructor(address _multiSigWallet,address _finitytoken) Ownable(_multiSigWallet) {
-        token = IERC20(_finitytoken); // finity Address on sepolia
+        token = IERC20(_finitytoken); // finity contract address
     }
 
     // Stake function
@@ -174,7 +174,7 @@ contract FinityStaking is Ownable2Step, ReentrancyGuard {
         view
         returns (uint256)
     {
-        require(_tokenAddress != address(0), "Invalid user address"); 
+        require(_tokenAddress != address(0), "Invalid token address"); 
         return IERC20(_tokenAddress).balanceOf(address(this));
     }
 }
