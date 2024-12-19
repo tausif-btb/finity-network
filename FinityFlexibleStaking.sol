@@ -96,9 +96,7 @@ contract FinityFlexibleStaking is Ownable2Step, ReentrancyGuard {
             return 0;
         }
         // For Proper Decimal precision
-        uint256 reward = ((block.timestamp - stakeInfo.startTime) *
-            stakeInfo.amount *
-            apy) / (365 days * 100);
+        uint256 reward = ((block.timestamp - stakeInfo.startTime) *stakeInfo.amount * apy) / (365 days * 100);
         return reward;
     }
 
