@@ -45,18 +45,13 @@ contract FinnityPreSale is Ownable2Step, Pausable, ReentrancyGuard {
         tokenPrice = _tokenPrice;
         multiSignTreasuryWallet = multiSigWallet;
         minThresholdLimit = _minThresholdLimit;
-        priceFeed = AggregatorV3Interface(
-            0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46
-        ); // USDT/ETH Pair Price Feed Address on mainnet
+        priceFeed = AggregatorV3Interface(0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46); // USDT/ETH Pair Price Feed Address
     }
 
-    function getETHPriceInUSDT() public view returns (uint256) {
+    function getUSDTPriceInETH() public view returns (uint256) {
         (, int256 price, , uint256 updatedAt, ) = priceFeed.latestRoundData();
         require(price > 0, "Invalid price data"); // Ensure valid price
-        require(
-            block.timestamp - updatedAt <= priceStaleThreshold,
-            "Price data is stale"
-        );
+        require(block.timestamp - updatedAt <= priceStaleThreshold,"Price data is stale");
         return uint256(price); // Price of 1 USDT in ETH
     }
 
@@ -69,17 +64,14 @@ contract FinnityPreSale is Ownable2Step, Pausable, ReentrancyGuard {
 
     function buyTokens() external payable whenNotPaused nonReentrant {
         require(msg.value > 0, "Must send some ETH");
-        uint256 price = getETHPriceInUSDT();
-        uint256 ethAmountInUSDT = (msg.value / price);
+        uint256 price = getUSDTPriceInETH();
+        uint256 ethAmountInUSDT = (msg.value * 1e18) / price ;
         require(
-            ethAmountInUSDT >= (minThresholdLimit / 1e6),
+            ethAmountInUSDT >= (minThresholdLimit * 1e12),
             "Less Than Threshold"
         );
-        uint256 finityTokQty = ethAmountInUSDT * tokenPrice;
-        require(
-            finityToken.balanceOf(address(this)) >= finityTokQty,
-            "Insufficient Finity bal"
-        );
+        uint256 finityTokQty = (ethAmountInUSDT * tokenPrice)/1e18;
+        require(finityToken.balanceOf(address(this)) >= finityTokQty,"Insufficient Finity bal");
 
         finityToken.safeTransfer(msg.sender, finityTokQty);
 
