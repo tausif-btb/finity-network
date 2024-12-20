@@ -137,12 +137,4 @@ contract FinityFlexibleStaking is Ownable2Step, ReentrancyGuard {
         finityToken = IERC20(_tokenAddress);
         emit finityTokenAddressUpdated(_tokenAddress);
     }
-
-    function withdrawETH(uint256 amount) external onlyOwner {
-        require(amount <= address(this).balance, "Insufficient ETH balance");
-        (bool success, ) = payable(multiSignTreasuryWallet).call{value: amount}(
-            ""
-        );
-        require(success, "ETH transfer failed");
-    }
 }
